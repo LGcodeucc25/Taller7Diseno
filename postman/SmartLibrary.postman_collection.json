@@ -1,0 +1,138 @@
+{
+  "info": {
+    "name": "SmartLibrary - Registrar préstamo",
+    "description": "Escenarios de prueba del taller SmartLibrary. Reinicie la aplicación antes de ejecutar la colección para partir de los datos iniciales (data.sql). Ejecute las peticiones en orden.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "1. Préstamo de libro disponible (201)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('201 Created', () => pm.response.to.have.status(201));",
+              "pm.test('Header Location', () => pm.response.to.have.header('Location'));",
+              "pm.test('Libro prestado', () => pm.expect(pm.response.json().libro).to.eql('Clean Code'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"estudianteId\": 1,\n  \"libroId\": 1\n}" },
+        "url": { "raw": "{{baseUrl}}/api/prestamos", "host": ["{{baseUrl}}"], "path": ["api", "prestamos"] }
+      }
+    },
+    {
+      "name": "2. Libro ya prestado (409)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('409 Conflict', () => pm.response.to.have.status(409));",
+              "pm.test('Mensaje', () => pm.expect(pm.response.json().mensaje).to.include('no está disponible'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"estudianteId\": 1,\n  \"libroId\": 3\n}" },
+        "url": { "raw": "{{baseUrl}}/api/prestamos", "host": ["{{baseUrl}}"], "path": ["api", "prestamos"] }
+      }
+    },
+    {
+      "name": "3. Estudiante inexistente (404)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('404 Not Found', () => pm.response.to.have.status(404));",
+              "pm.test('Mensaje', () => pm.expect(pm.response.json().mensaje).to.eql('Estudiante no encontrado: 999'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"estudianteId\": 999,\n  \"libroId\": 2\n}" },
+        "url": { "raw": "{{baseUrl}}/api/prestamos", "host": ["{{baseUrl}}"], "path": ["api", "prestamos"] }
+      }
+    },
+    {
+      "name": "4. Libro inexistente (404)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('404 Not Found', () => pm.response.to.have.status(404));",
+              "pm.test('Mensaje', () => pm.expect(pm.response.json().mensaje).to.eql('Libro no encontrado: 999'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"estudianteId\": 1,\n  \"libroId\": 999\n}" },
+        "url": { "raw": "{{baseUrl}}/api/prestamos", "host": ["{{baseUrl}}"], "path": ["api", "prestamos"] }
+      }
+    },
+    {
+      "name": "5. Consultar préstamos (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "pm.test('Con registros', () => pm.expect(pm.response.json().length).to.be.above(0));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/api/prestamos", "host": ["{{baseUrl}}"], "path": ["api", "prestamos"] }
+      }
+    },
+    {
+      "name": "6. Solicitud inválida - estudianteId null (400)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('400 Bad Request', () => pm.response.to.have.status(400));",
+              "pm.test('Mensaje', () => pm.expect(pm.response.json().mensaje).to.include('estudianteId'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"estudianteId\": null,\n  \"libroId\": 2\n}" },
+        "url": { "raw": "{{baseUrl}}/api/prestamos", "host": ["{{baseUrl}}"], "path": ["api", "prestamos"] }
+      }
+    }
+  ]
+}
